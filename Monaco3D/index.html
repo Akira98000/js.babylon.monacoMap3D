@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affichage de fichier .glb avec Babylon.js</title>
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("renderCanvas");
+        const engine = new BABYLON.Engine(canvas, true);
+
+        const createScene = function() {
+            const scene = new BABYLON.Scene(engine);
+
+               // Créer une caméra libre et la positionner
+                const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1005, 0), scene);
+                camera.setTarget(BABYLON.Vector3.Zero());
+
+                // Attacher les contrôles de la caméra au canvas
+                camera.attachControl(canvas, true);
+
+                // Ajuster la sensibilité de rotation
+                camera.angularSensibilityX = 1; // Valeur plus élevée = rotation plus lente
+                camera.angularSensibilityY = 2000; // Valeur plus élevée = rotation plus lente
+
+                // Configurer les contrôles au clavier
+                camera.keysUp.push(38);    // Flèche haut
+                camera.keysDown.push(40);  // Flèche bas
+                camera.keysLeft.push(37);  // Flèche gauche
+                camera.keysRight.push(39); // Flèche droite
+
+                camera.speed = 200;
+            // Créer un éclairage de base
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+
+            // Ajouter une skybox
+            const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:10000.0}, scene);
+            const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+            skyboxMaterial.backFaceCulling = false;
+            skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("https://www.babylonjs-playground.com/textures/TropicalSunnyDay", scene);
+            skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+            skybox.material = skyboxMaterial;
+
+            BABYLON.SceneLoader.Append("/", "monaco.glb", scene, function (scene) {
+                console.log("Modèle .glb chargé avec succès");
+            });
+
+            return scene;
+        };
+
+        const scene = createScene();
+
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
